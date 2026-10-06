@@ -3286,7 +3286,7 @@ function(el, x, data) {
 
       // Keep Minnesota's western edge at a fixed small margin.
       // The camera owns all mobile map positioning; CSS does not shift panes.
-      var targetLeft = sideMargin;
+      var targetLeft = sideMargin - 10;
       var targetCenterY = (targetTop + targetBottom) / 2;
 
       var centerProjected = L.point(
