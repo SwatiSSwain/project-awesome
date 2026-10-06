@@ -21,7 +21,7 @@ jobs:
 
       - name: Install R packages
         run: |
-          Rscript -e 'install.packages(c("rmarkdown", "knitr", "leaflet", "htmlwidgets", "dplyr", "tidyr", "purrr", "readr", "stringr", "lubridate", "jsonlite", "sf", "geosphere"))'
+          Rscript -e 'install.packages(c("rmarkdown", "knitr", "leaflet", "htmlwidgets", "dplyr", "tidyr", "purrr", "readr", "stringr", "lubridate", "jsonlite", "sf", "geosphere", "maps"))'
 
       - name: Render Project Awesome
         run: |
