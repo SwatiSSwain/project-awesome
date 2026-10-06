@@ -2136,19 +2136,8 @@ select[id*="speed"] {
     background: #fbfbfd !important;
   }
 
-  /* Mobile: use the one approach that visibly moved Minnesota right in testing.
-     Shift Leaflet visual panes together. Mobile vector layers use SVG so county
-     fills move with the pane instead of being clipped by a Canvas bitmap edge. */
-  .leaflet-overlay-pane,
-  .leaflet-marker-pane,
-  .leaflet-shadow-pane,
-  .leaflet-tooltip-pane,
-  .leaflet-popup-pane {
-    /* Responsive horizontal offset: scales with the real mobile viewport instead of
-       using the previous fixed 100px shift. Capped so Minnesota stays near the left edge. */
-    left: clamp(55px, 18vw, 74px) !important;
-    top: -50px !important;
-  }
+  /* Mobile Minnesota positioning is handled entirely by applyMinnesotaCamera().
+     Do not add a second CSS offset to Leaflet panes. */
 
   .video-stage {
     overflow: hidden !important;
@@ -3251,66 +3240,62 @@ function(el, x, data) {
   // MOBILE PROOF TEST: verify execution, sizing, camera coordinates, and Canvas placement.
   function applyMinnesotaCamera() {
     if (isMobileLayout) {
-      // Mobile uses a stateless, single-commit camera calculation.
-      // Update Leaflet's size first, then derive zoom and center directly
-      // from Minnesota's geographic bounds. Do not fitBounds/setZoom/panBy
-      // before the final setView.
       map.invalidateSize({ animate: false, pan: false });
-
-      var mobileTargetLeft = 40;
-      var mobileTargetTop = 137;
-      var mobileTargetBottom = 620;
-      var mobileTargetHeight = mobileTargetBottom - mobileTargetTop;
-      var mobileTargetCenterY =
-        (mobileTargetTop + mobileTargetBottom) / 2;
-
       var mapSize = map.getSize();
 
-      // Measure Minnesota in Leaflet's base projection. Pixel dimensions
-      // scale by 2^zoom, so this determines the required zoom without
-      // depending on the map's current camera state.
-      var baseNW = map.project([
+      var sideMargin = 10;
+      var targetTop = 87;
+      var targetBottom = 570;
+      var targetHeight = targetBottom - targetTop;
+      var maxWidth = mapSize.x - sideMargin * 2;
+
+      var nw0 = map.project([
         minnesotaBounds.getNorth(),
         minnesotaBounds.getWest()
       ], 0);
-      var baseSE = map.project([
+      var se0 = map.project([
         minnesotaBounds.getSouth(),
         minnesotaBounds.getEast()
       ], 0);
-      var baseHeight = Math.abs(baseSE.y - baseNW.y);
-      var desiredZoom =
-        Math.log(mobileTargetHeight / baseHeight) / Math.log(2);
+      var baseW = Math.abs(se0.x - nw0.x);
+      var baseH = Math.abs(se0.y - nw0.y);
 
-      // Match Leaflet's configured zoom snapping before calculating center,
-      // so the projection and the final setView use exactly the same zoom.
+      // Fit by whichever dimension is tighter so the whole state remains visible.
+      var desiredZoom = Math.log(
+        Math.min(targetHeight / baseH, maxWidth / baseW)
+      ) / Math.log(2);
+
       var zoomSnap = Number(map.options.zoomSnap || 0);
       if (zoomSnap > 0) {
-        desiredZoom = Math.round(desiredZoom / zoomSnap) * zoomSnap;
+        // Round down so zoom snapping can never make the state overflow.
+        desiredZoom = Math.floor(desiredZoom / zoomSnap) * zoomSnap;
       }
       desiredZoom = Math.max(
         map.getMinZoom(),
         Math.min(map.getMaxZoom(), desiredZoom)
       );
 
-      var projectedNW = map.project([
+      var pNW = map.project([
         minnesotaBounds.getNorth(),
         minnesotaBounds.getWest()
       ], desiredZoom);
-      var projectedSE = map.project([
+      var pSE = map.project([
         minnesotaBounds.getSouth(),
         minnesotaBounds.getEast()
       ], desiredZoom);
 
-      // Solve directly for the Leaflet center that places Minnesota's west
-      // edge at x=40 and vertically centers the state in the target band.
-      var desiredCenterProjected = L.point(
-        projectedNW.x + mapSize.x / 2 - mobileTargetLeft,
-        (projectedNW.y + projectedSE.y) / 2 +
-          mapSize.y / 2 - mobileTargetCenterY
+      // Keep Minnesota's western edge at a fixed small margin.
+      // The camera owns all mobile map positioning; CSS does not shift panes.
+      var targetLeft = sideMargin;
+      var targetCenterY = (targetTop + targetBottom) / 2;
+
+      var centerProjected = L.point(
+        pNW.x + mapSize.x / 2 - targetLeft,
+        (pNW.y + pSE.y) / 2 + mapSize.y / 2 - targetCenterY
       );
 
       map.setView(
-        map.unproject(desiredCenterProjected, desiredZoom),
+        map.unproject(centerProjected, desiredZoom),
         desiredZoom,
         { animate: false, reset: true }
       );
