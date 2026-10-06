@@ -2242,6 +2242,11 @@ select[id*="speed"] {
     line-height: 1.1 !important;
   }
 
+  /* Mobile: close the thin gap below the 44px playback bar. */
+  .story-intro {
+    top: 44px !important;
+  }
+
   .story-intro-inner {
     width: calc(100% - 36px) !important;
     transform: translateY(-4px) !important;
