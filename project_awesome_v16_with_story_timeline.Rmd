@@ -2145,11 +2145,16 @@ select[id*="speed"] {
 
   /* Mobile globe: move up 25px and enlarge about 12%; keep horizontal position unchanged. */
   .earth-comparison-panel {
-    top: 310px !important;
+    top: 325px !important;
     right: 50% !important;
     width: 392px !important;
     height: 283px !important;
     transform: translateX(calc(50% + 80px)) !important;
+  }
+
+  /* Move only the globe graphic up 15px; keep the text overlay at its prior position. */
+  .earth-visual-wrap {
+    transform: translateY(-15px) !important;
   }
 
   /* Mobile globe copy: keep all three lines above the globe and aligned with it. */
