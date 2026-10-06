@@ -11,9 +11,8 @@ on:
       - ".github/workflows/deploy.yml"
 
   schedule:
-    # GitHub cron uses UTC.
-    # Runs every day at 11:00 UTC.
-    - cron: "0 11 * * *"
+    # Runs every day at 9:00 UTC = 3:00 AM CST
+    - cron: "0 9 * * *"
 
 permissions:
   contents: read
