@@ -2144,7 +2144,9 @@ select[id*="speed"] {
   .leaflet-shadow-pane,
   .leaflet-tooltip-pane,
   .leaflet-popup-pane {
-    left: 100px !important;
+    /* Responsive horizontal offset: scales with the real mobile viewport instead of
+       using the previous fixed 100px shift. Capped so Minnesota stays near the left edge. */
+    left: clamp(55px, 18vw, 74px) !important;
     top: -50px !important;
   }
 
