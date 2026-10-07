@@ -11,9 +11,10 @@ on:
       - ".github/workflows/deploy.yml"
 
   schedule:
-    # Runs every day at 9:00 UTC = 3:00 AM CST
-    - cron: "0 9 * * *"
-
+    # Daily at 3:00 AM Minnesota time
+    - cron: "0 3 * * *"     
+      timezone: "America/Chicago"
+      
 permissions:
   contents: read
   pages: write
