@@ -2270,7 +2270,9 @@ select[id*="speed"] {
     margin-top: 18px !important;
   }
 
+  /* Match the mobile intro overlay: cover the area directly below the player. */
   .story-ending {
+    top: 44px !important;
     padding: 26px 22px !important;
   }
 
@@ -3148,8 +3150,14 @@ function(el, x, data) {
     if (!point) return;
 
     if (brandDateElement) {
-      brandDateElement.textContent =
-        displayDateLabel || point.date_label || '';
+      // Compact only the top HUD date; retain original dates everywhere else.
+      var hudDate = displayDateLabel || point.date_label || '';
+      brandDateElement.textContent = hudDate.replace(
+        /^(January|February|March|April|May|June|July|August|September|October|November|December)\\s+0?(\\d{1,2}),\\s*(\\d{4})$/,
+        function(match, month, day, year) {
+          return month.slice(0, 3) + ' ' + Number(day) + ', ' + year;
+        }
+      );
     }
 
     if (brandLocationElement) {
