@@ -2419,6 +2419,18 @@ map <- htmlwidgets::onRender(
   jsCode = "
 function(el, x, data) {
   var map = this;
+
+  // Lock the Leaflet camera so users cannot accidentally move or zoom Minnesota.
+  map.dragging.disable();
+  map.touchZoom.disable();
+  map.doubleClickZoom.disable();
+  map.scrollWheelZoom.disable();
+  map.boxZoom.disable();
+  map.keyboard.disable();
+  if (map.tap) {
+    map.tap.disable();
+  }
+
   var route = HTMLWidgets.dataframeToD3(data.route);
 
   var storyIntroElement = document.getElementById('story-intro');
