@@ -2504,8 +2504,8 @@ function(el, x, data) {
   var baseDuration = Math.max(100, Number(data.segmentDuration) || 650);
 
   // Playback speed controls the journey/story clock after the intro.
-  // Default playback is 5x: fast enough to shorten the full journey while keeping the story readable.
-  var speedMultiplier = 5;
+  // Default playback is 10x; 15x is also available in the speed selector.
+  var speedMultiplier = 10;
 
   function scaledDelay(milliseconds) {
     return Math.max(1, Number(milliseconds || 0) / speedMultiplier);
@@ -3381,25 +3381,80 @@ function(el, x, data) {
     );
   }
 
-  // One mobile camera pass. Vector layers created above use SVG on mobile,
-  // so no Canvas padding/redraw workaround is needed.
-  if (isMobileLayout) {
-    window.requestAnimationFrame(function() {
+  // Embedded-page resilience: Leaflet can initialize before a website's
+  // layout, lazy section, or responsive wrapper reaches its final dimensions.
+  // Keep the existing 600x650 desktop / responsive mobile design, but
+  // remeasure the actual map element and reapply the camera after layout.
+  // This also works when the Rmd HTML is injected into a page rather than
+  // isolated in an iframe. It does not change the route or playback state.
+  var cameraRefreshPending = false;
+  var cameraRefreshRunning = false;
+  var lastCameraWidth = 0;
+  var lastCameraHeight = 0;
+  var lastCameraMobile = isMobileLayout;
+
+  function refreshMinnesotaCamera() {
+    if (cameraRefreshRunning) return;
+    var container = map.getContainer();
+    if (!container) return;
+    var box = container.getBoundingClientRect();
+    if (box.width < 80 || box.height < 80) return;
+    cameraRefreshRunning = true;
+    try {
+      // Responsive mode must follow the map's actual rendered width, not
+      // the host page's viewport width (which may be much wider).
+      isMobileLayout = box.width <= 420;
+      map.invalidateSize({ animate: false, pan: false });
       applyMinnesotaCamera();
-    });
-  } else {
-    applyMinnesotaCamera();
+      widenVectorRenderer();
+      lastCameraWidth = box.width;
+      lastCameraHeight = box.height;
+      lastCameraMobile = isMobileLayout;
+    } finally {
+      cameraRefreshRunning = false;
+    }
   }
 
-  // Recompute SVG bounds after camera/layout changes and whenever the map resizes.
-  window.requestAnimationFrame(function() {
-    widenVectorRenderer();
+  function scheduleMinnesotaCameraRefresh(force) {
+    if (cameraRefreshPending) return;
+    var container = map.getContainer();
+    if (!container) return;
+    var box = container.getBoundingClientRect();
+    var mobileNow = box.width <= 420;
+    if (!force &&
+        Math.abs(box.width - lastCameraWidth) < 1 &&
+        Math.abs(box.height - lastCameraHeight) < 1 &&
+        mobileNow === lastCameraMobile) return;
+    cameraRefreshPending = true;
+    window.requestAnimationFrame(function() {
+      cameraRefreshPending = false;
+      refreshMinnesotaCamera();
+    });
+  }
+
+  scheduleMinnesotaCameraRefresh(true);
+  // Retry after host layout/fonts/widgets settle; no permanent polling.
+  [250, 900, 2000].forEach(function(delay) {
+    window.setTimeout(function() {
+      scheduleMinnesotaCameraRefresh(true);
+    }, delay);
   });
 
-  map.on('resize', function() {
-    window.requestAnimationFrame(function() {
-      widenVectorRenderer();
+  // Recompute only on a real size change, avoiding camera jumps during play.
+  if (typeof ResizeObserver !== 'undefined') {
+    var minnesotaResizeObserver = new ResizeObserver(function() {
+      scheduleMinnesotaCameraRefresh(false);
     });
+    minnesotaResizeObserver.observe(map.getContainer());
+  }
+  window.addEventListener('resize', function() {
+    scheduleMinnesotaCameraRefresh(false);
+  }, { passive: true });
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) scheduleMinnesotaCameraRefresh(true);
+  });
+  map.on('resize', function() {
+    if (!cameraRefreshRunning) scheduleMinnesotaCameraRefresh(false);
   });
 
   var dayStartIndices = [];
@@ -3457,9 +3512,10 @@ function(el, x, data) {
           '<option value=\"2\">2x</option>' +
           '<option value=\"3\">3x</option>' +
           '<option value=\"4\">4x</option>' +
-          '<option value=\"5\" selected>5x</option>' +
+          '<option value=\"5\">5x</option>' +
           '<option value=\"7\">7x</option>' +
-          '<option value=\"10\">10x</option>' +
+          '<option value=\"10\" selected>10x</option>' +
+          '<option value=\"15\">15x</option>' +
         '</select>' +
       '</div>' +
       '<div class=\"timeline-wrap\">' +
