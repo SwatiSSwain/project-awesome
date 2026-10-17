@@ -240,7 +240,10 @@ html, body {
 .route-animation-control .button-row:not(.timeline-button-row) select {
   align-self: center !important;
   height: 30px !important;
-  padding: 0 14px 0 0 !important;
+  width: 52px !important;
+  min-width: 52px !important;
+  padding: 0 12px 0 2px !important;
+  box-sizing: border-box !important;
   margin: 0 !important;
   border: none !important;
   outline: none !important;
