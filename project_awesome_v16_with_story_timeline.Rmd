@@ -2448,6 +2448,26 @@ function(el, x, data) {
 
   var route = HTMLWidgets.dataframeToD3(data.route);
 
+  // AUDIO AUTOPLAY TEST ONLY: independent of animation controls for now.
+  var projectMusic = document.getElementById('project-awesome-test-audio');
+  var audioStatus = document.getElementById('project-awesome-audio-status');
+  if (projectMusic) {
+    projectMusic.volume = 0.65;
+    var attempt = projectMusic.play();
+    if (attempt && typeof attempt.then === 'function') {
+      attempt.then(function() {
+        if (audioStatus) audioStatus.textContent = 'Audio autoplay started.';
+      }).catch(function(err) {
+        if (audioStatus) audioStatus.textContent =
+          'Browser blocked audio autoplay. Press Play on the audio player to hear the song.';
+      });
+    }
+    projectMusic.addEventListener('error', function() {
+      if (audioStatus) audioStatus.textContent =
+        'Audio could not load. Check the hosted M4A URL.';
+    });
+  }
+
   var storyIntroElement = document.getElementById('story-intro');
   var storyJourneyCaptionElement =
     document.getElementById('story-journey-caption');
@@ -5035,6 +5055,15 @@ map
 ```
 
 ```{=html}
+</div>
+<div id="project-awesome-audio-test" style="width:600px;max-width:100%;margin:8px auto 16px;font-family:Arial,sans-serif;">
+  <audio id="project-awesome-test-audio" controls autoplay preload="auto" style="width:100%;display:block;">
+    <source src="https://www.erikosberg4congress.com/wp-content/uploads/2026/06/IveBeenEverywhere.m4a" type="audio/mp4">
+    Your browser does not support HTML5 audio.
+  </audio>
+  <div id="project-awesome-audio-status" aria-live="polite" style="font-size:12px;color:#555;margin-top:5px;">
+    Testing audio autoplay…
+  </div>
 </div>
 ```
 
