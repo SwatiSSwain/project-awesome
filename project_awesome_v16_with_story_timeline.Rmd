@@ -8,7 +8,7 @@ params:
   data_file: "minnesota_destinations_coordinates.csv"
   home_city: "Wadena"
   segment_duration_ms: 500
-  auto_start: true
+  auto_start: false
   equator_circumference_miles: 24901
 ---
 
@@ -2582,6 +2582,7 @@ function(el, x, data) {
   var introElapsed = 0;
   var introLastTimestamp = null;
   var introActive = true;
+  var introChoiceMade = false;
 
   var milestoneMiles = Number(data.equatorCircumferenceMiles) || 24901;
   var distanceSetupMiles = milestoneMiles * 0.88;
@@ -4864,6 +4865,8 @@ function(el, x, data) {
   }
 
   function play() {
+    // Require an explicit intro choice before the journey can start.
+    if (introActive && !introChoiceMade) return;
     if (playing) {
       return;
     }
@@ -4907,6 +4910,7 @@ function(el, x, data) {
     introElapsed = 0;
     introLastTimestamp = null;
     introActive = true;
+    introChoiceMade = false;
 
     if (storyIntroElement) {
       storyIntroElement.classList.remove('is-leaving');
@@ -4925,7 +4929,8 @@ function(el, x, data) {
     journeyCaptionState.key = null;
     hideJourneyCaption();
 
-    if (autoPlay) {
+    // Restart returns to the choice screen; never bypass the selection.
+    if (autoPlay && introChoiceMade) {
       play();
     }
   }
@@ -4993,6 +4998,7 @@ function(el, x, data) {
   var withMusicButton = document.getElementById('story-play-with-music');
   var silentButton = document.getElementById('story-play-silent');
   function dismissIntroChoice() {
+    introChoiceMade = true;
     introElapsed = introHoldDuration;
     introLastTimestamp = null;
     if (!playing) play();
@@ -5092,13 +5098,8 @@ function(el, x, data) {
     }
   );
 
-  // Use the original, proven autoplay entry point.
-  // The opening hold is now handled inside drawFrame(), so autoplay and
-  // the intro cannot drift out of sync.
-  restart(
-    data.autoStart === true ||
-    data.autoStart === 'true'
-  );
+  // Always wait on the intro until a visitor chooses music or silence.
+  restart(false);
 }
 ",
   data = animation_payload
