@@ -1265,6 +1265,13 @@ html, body {
   font-weight: 800 !important;
   letter-spacing: 0.06em !important;
 }
+
+/* Optional soundtrack: compact intro choice, no separate audio player. */
+.story-music-options { display:flex; justify-content:center; gap:12px; margin-top:22px; pointer-events:auto !important; }
+.story-music-options button { cursor:pointer; border:2px solid #4E2D7E; background:#4E2D7E; color:white; border-radius:6px; padding:10px 12px; font-family:"League Spartan",Arial,sans-serif; font-size:13px; font-weight:800; pointer-events:auto !important; }
+.story-music-options button + button { background:white; color:#4E2D7E; }
+.story-intro.is-leaving .story-music-options { pointer-events:none !important; }
+.route-animation-control button[id^="music-toggle-"] { font-size:17px !important; width:28px !important; }
 </style>
 
 
@@ -1803,6 +1810,10 @@ route_js <- route |>
     <div class="story-intro-rule"></div>
     <div class="story-intro-subtitle">See what showing up looks like</div>
     <div class="story-intro-mile-line">County by county · City by city · Mile by mile</div>
+    <div class="story-music-options" id="story-music-options">
+      <button type="button" id="story-play-with-music">▶ Play with Music</button>
+      <button type="button" id="story-play-silent">Play without Music</button>
+    </div>
   </div>
 </div>
 <div class="story-journey-caption" id="story-journey-caption" aria-live="polite"></div>
@@ -2448,24 +2459,33 @@ function(el, x, data) {
 
   var route = HTMLWidgets.dataframeToD3(data.route);
 
-  // AUDIO AUTOPLAY TEST ONLY: independent of animation controls for now.
-  var projectMusic = document.getElementById('project-awesome-test-audio');
-  var audioStatus = document.getElementById('project-awesome-audio-status');
-  if (projectMusic) {
-    projectMusic.volume = 0.65;
-    var attempt = projectMusic.play();
-    if (attempt && typeof attempt.then === 'function') {
-      attempt.then(function() {
-        if (audioStatus) audioStatus.textContent = 'Audio autoplay started.';
-      }).catch(function(err) {
-        if (audioStatus) audioStatus.textContent =
-          'Browser blocked audio autoplay. Press Play on the audio player to hear the song.';
-      });
-    }
-    projectMusic.addEventListener('error', function() {
-      if (audioStatus) audioStatus.textContent =
-        'Audio could not load. Check the hosted M4A URL.';
+  // Optional soundtrack. Starts only after a visitor clicks a music control.
+  var projectMusic = document.getElementById('project-awesome-music');
+  var musicEnabled = false;
+  if (projectMusic) projectMusic.volume = 0.65;
+  function refreshMusicButton() {
+    var button = document.getElementById('music-toggle-' + el.id);
+    if (!button) return;
+    button.textContent = musicEnabled ? '🔊' : '🔇';
+    button.title = musicEnabled ? 'Turn music off' : 'Turn music on';
+    button.setAttribute('aria-label', button.title);
+  }
+  function startMusic(fromBeginning) {
+    if (!projectMusic) return;
+    musicEnabled = true;
+    if (fromBeginning) projectMusic.currentTime = 0;
+    refreshMusicButton();
+    // Called directly from a click handler to satisfy browser audio policies.
+    var result = projectMusic.play();
+    if (result && result.catch) result.catch(function() {
+      musicEnabled = false;
+      refreshMusicButton();
     });
+  }
+  function stopMusic() {
+    musicEnabled = false;
+    if (projectMusic) projectMusic.pause();
+    refreshMusicButton();
   }
 
   var storyIntroElement = document.getElementById('story-intro');
@@ -3528,6 +3548,7 @@ function(el, x, data) {
       '</div>' +
       '<div class=\"button-row\">' +
         '<button type=\"button\" title=\"Restart\" aria-label=\"Restart\" id=\"restart-' + el.id + '\">↻</button>' +
+        '<button type=\"button\" title=\"Toggle music\" id=\"music-toggle-' + el.id + '\">🔇</button>' +
         '<label class=\"sr-only\" for=\"speed-' + el.id + '\">Playback speed</label>' +
         '<select aria-label=\"Playback speed\" id=\"speed-' + el.id + '\">' +
           '<option value=\"0.5\">0.5x</option>' +
@@ -4764,6 +4785,7 @@ function(el, x, data) {
   }
 
   function finishPlayback() {
+    if (projectMusic) projectMusic.pause();
     stopPlayback();
     renderAtPosition(maxPosition);
     showStoryEnding();
@@ -4855,16 +4877,25 @@ function(el, x, data) {
     hideStoryMilestone();
 
     playing = true;
+    if (musicEnabled && projectMusic && projectMusic.paused) {
+      var resumed = projectMusic.play();
+      if (resumed && resumed.catch) resumed.catch(function() {});
+    }
     playPauseButton.textContent = 'Ⅱ';
     lastFrameTimestamp = null;
     animationFrame = window.requestAnimationFrame(drawFrame);
   }
 
   function pause() {
+    if (projectMusic) projectMusic.pause();
     stopPlayback();
   }
 
   function restart(autoPlay) {
+    if (projectMusic) {
+      projectMusic.pause();
+      projectMusic.currentTime = 0;
+    }
     stopPlayback();
     hideStoryEnding();
     hideStoryMilestone();
@@ -4953,6 +4984,28 @@ function(el, x, data) {
       }
     }
   }
+
+  var musicToggleButton = document.getElementById('music-toggle-' + el.id);
+  if (musicToggleButton) musicToggleButton.addEventListener('click', function() {
+    if (musicEnabled) stopMusic();
+    else startMusic(false);
+  });
+  var withMusicButton = document.getElementById('story-play-with-music');
+  var silentButton = document.getElementById('story-play-silent');
+  function dismissIntroChoice() {
+    introElapsed = introHoldDuration;
+    introLastTimestamp = null;
+    if (!playing) play();
+  }
+  if (withMusicButton) withMusicButton.addEventListener('click', function() {
+    startMusic(true);
+    dismissIntroChoice();
+  });
+  if (silentButton) silentButton.addEventListener('click', function() {
+    stopMusic();
+    dismissIntroChoice();
+  });
+  refreshMusicButton();
 
   playPauseButton.addEventListener(
     'click',
@@ -5056,15 +5109,9 @@ map
 
 ```{=html}
 </div>
-<div id="project-awesome-audio-test" style="width:600px;max-width:100%;margin:8px auto 16px;font-family:Arial,sans-serif;">
-  <audio id="project-awesome-test-audio" controls autoplay preload="auto" style="width:100%;display:block;">
-    <source src="https://www.erikosberg4congress.com/wp-content/uploads/2026/06/IveBeenEverywhere.m4a" type="audio/mp4">
-    Your browser does not support HTML5 audio.
-  </audio>
-  <div id="project-awesome-audio-status" aria-live="polite" style="font-size:12px;color:#555;margin-top:5px;">
-    Testing audio autoplay…
-  </div>
-</div>
+<audio id="project-awesome-music" preload="none">
+  <source src="https://www.erikosberg4congress.com/wp-content/uploads/2026/06/IveBeenEverywhere.m4a" type="audio/mp4">
+</audio>
 ```
 
 <style>
