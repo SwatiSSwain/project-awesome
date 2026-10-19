@@ -2343,8 +2343,9 @@ select[id*="speed"] {
 @media (max-width: 640px) {
   .intro-equation-break { display: inline !important; }
   .intro-equation-tail { white-space: nowrap; }
-  /* Raise the complete mobile globe group by 8px; preserve internal spacing. */
-  .earth-comparison-panel { top: 317px !important; }
+  /* Mobile: lift the globe and its comparison text together another 16px.
+     Keep the globe/text spacing and desktop layout unchanged. */
+  .earth-comparison-panel { top: 301px !important; }
 }
 /* 2026-10-19: intro wording, compact mobile playback bar and tighter mobile document. */
 .story-intro-title {
