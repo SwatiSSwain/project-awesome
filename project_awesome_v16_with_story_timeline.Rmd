@@ -1805,11 +1805,11 @@ route_js <- route |>
 <div class="video-stage">
 <div class="story-intro" id="story-intro">
   <div class="story-intro-inner">
-    <div class="story-intro-name story-intro-name-first">Erik Osberg</div>
-    <div class="story-intro-title">A Campaign<br>Measured in Miles</div>
+    <div class="story-intro-name story-intro-name-first">ERIK OSBERG</div>
+    <div class="story-intro-title">Accessibility + Responsiveness<span class="intro-equation-break"><br></span><span class="intro-equation-tail"> = Accountability</span></div>
     <div class="story-intro-rule"></div>
-    <div class="story-intro-subtitle">See what showing up looks like</div>
-    <div class="story-intro-mile-line">County by county · City by city · Mile by mile</div>
+    <div class="story-intro-subtitle">Here’s what showing up looks like</div>
+    <div class="story-intro-mile-line">County by County – Mile by Mile – Handshake by Handshake</div>
     <div class="story-music-options" id="story-music-options">
       <button type="button" id="story-play-with-music">▶ Play with Music</button>
       <button type="button" id="story-play-silent">Play without Music</button>
@@ -1872,7 +1872,6 @@ route_js <- route |>
     </svg>
   </div>
   <div class="earth-text-overlay" aria-live="polite">
-    <div class="earth-driver-label">ERIK KEEPS DRIVING</div>
     <div class="earth-turn-line">
       <div id="earth-drive-miles" class="earth-turn-value">0.00×</div>
       <div class="earth-turn-caption">AROUND THE WORLD</div>
@@ -2182,7 +2181,7 @@ select[id*="speed"] {
   }
 
   .earth-text-overlay {
-    top: -15px !important;
+    top: 1px !important;
     left: 20px !important;
     width: 330px !important;
     align-items: center !important;
@@ -2334,6 +2333,84 @@ select[id*="speed"] {
 }
 @media (min-width: 1000px) and (min-height: 1050px) {
   .main-container { zoom: 1.3333333333; } /* 800 x ~867 */
+}
+</style>
+
+<style>
+/* Intro equation: one line on desktop, intentional two-line break on mobile. */
+.intro-equation-break { display: none !important; }
+.intro-equation-tail { white-space: nowrap; }
+@media (max-width: 640px) {
+  .intro-equation-break { display: inline !important; }
+  .intro-equation-tail { white-space: nowrap; }
+  /* Raise the complete mobile globe group by 8px; preserve internal spacing. */
+  .earth-comparison-panel { top: 317px !important; }
+}
+/* 2026-10-19: intro wording, compact mobile playback bar and tighter mobile document. */
+.story-intro-title {
+  font-family: "League Spartan", Arial, sans-serif !important;
+  font-size: 21px !important;
+  line-height: 1.14 !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.025em !important;
+  text-transform: none !important;
+}
+.story-intro-mile-line {
+  letter-spacing: 0.035em !important;
+  text-transform: none !important;
+  line-height: 1.25 !important;
+}
+@media (max-width: 640px) {
+  /* Preserve the existing 620px mobile stage and overlay alignment. */
+  .story-intro-title { font-size: 16px !important; line-height: 1.16 !important; }
+  .story-intro-name-first { margin-bottom: 10px !important; }
+  .story-intro-subtitle { font-size: 14px !important; line-height: 1.15 !important; }
+  .story-intro-mile-line { font-size: 10px !important; margin-top: 14px !important; }
+  .story-music-options { gap: 8px !important; margin-top: 17px !important; }
+  .story-music-options button { padding: 9px 8px !important; font-size: 11px !important; }
+
+  /* One row even at ~320px; all playback buttons remain visible and clickable. */
+  .route-animation-control .timeline-button-row {
+    top: 7px !important; left: 6px !important;
+    width: 86px !important; gap: 0 !important;
+    justify-content: space-between !important;
+    flex-wrap: nowrap !important;
+  }
+  .route-animation-control .timeline-button-row button {
+    width: 28px !important; min-width: 28px !important;
+    height: 28px !important; padding: 0 !important;
+    font-size: 15px !important; line-height: 28px !important;
+  }
+  .route-animation-control .button-row:not(.timeline-button-row) {
+    top: 7px !important; left: 96px !important;
+    width: 103px !important; height: 28px !important;
+    display: flex !important; flex-wrap: nowrap !important;
+    align-items: center !important; justify-content: flex-start !important;
+    gap: 1px !important; white-space: nowrap !important;
+  }
+  .route-animation-control .button-row:not(.timeline-button-row) button,
+  .route-animation-control .button-row:not(.timeline-button-row) button[id^="music-toggle-"] {
+    width: 25px !important; min-width: 25px !important; max-width: 25px !important;
+    height: 28px !important; padding: 0 !important;
+    font-size: 15px !important; line-height: 28px !important;
+    flex: 0 0 25px !important;
+  }
+  .route-animation-control .button-row:not(.timeline-button-row) select[id*="speed"] {
+    display: block !important;
+    width: 50px !important; min-width: 50px !important; max-width: 50px !important;
+    height: 28px !important; padding: 0 10px 0 0 !important;
+    margin: 0 !important; font-size: 10px !important;
+    line-height: 28px !important; flex: 0 0 50px !important;
+  }
+  .route-animation-control .timeline-wrap {
+    top: 11px !important; left: 203px !important;
+    width: calc(100% - 212px) !important;
+    min-width: 0 !important;
+  }
+  /* Remove HTML-document bottom margins; an external WordPress iframe's
+     reserved height must still be adjusted in the parent page if oversized. */
+  html, body, .main-container { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+  .main-container > :last-child { margin-bottom: 0 !important; }
 }
 </style>
 
