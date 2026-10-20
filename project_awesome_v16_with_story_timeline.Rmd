@@ -1303,11 +1303,9 @@ required_columns <- c(
   "stop_in_source_row",
   "date",
   "destination",
-  "location_name",
   "latitude",
   "longitude",
   "County",
-  "original_destination",
   "miles_counted"
 )
 
@@ -1330,15 +1328,11 @@ locations <- locations |>
     source_row = as.integer(source_row),
     stop_in_source_row = as.integer(stop_in_source_row),
     event_date = as.Date(date, format = "%m/%d/%Y"),
-    location_name = stringr::str_squish(
-      dplyr::coalesce(location_name, destination)
-    ),
     latitude = suppressWarnings(as.numeric(latitude)),
     longitude = suppressWarnings(as.numeric(longitude)),
     County = stringr::str_squish(dplyr::coalesce(County, "")),
     zipcode = stringr::str_trim(dplyr::coalesce(zipcode, "")),
-    destination = stringr::str_trim(destination),
-    original_destination = stringr::str_trim(original_destination),
+    destination = stringr::str_squish(destination),
     miles_counted = suppressWarnings(
       readr::parse_double(
         miles_counted,
@@ -1392,7 +1386,7 @@ event_geocoded <- event_input |>
   dplyr::mutate(
     lat = latitude,
     lng = longitude,
-    zip_city = location_name,
+    zip_city = destination,
     zip_state = "MN"
   )
 
@@ -1410,7 +1404,7 @@ route_events <- event_geocoded |>
 
 home_coordinates <- locations |>
   dplyr::filter(
-    stringr::str_to_lower(stringr::str_trim(location_name)) == "wadena",
+    stringr::str_to_lower(stringr::str_trim(destination)) == "wadena",
     !is.na(latitude),
     !is.na(longitude)
   ) |>
@@ -1472,7 +1466,7 @@ daily_routes <- lapply(
     # If the first actual event is already in Wadena, do not add a duplicate
     # home-departure point.
 
-    if (stringr::str_to_lower(day_events$location_name[[1]]) !=
+    if (stringr::str_to_lower(day_events$destination[[1]]) !=
         stringr::str_to_lower(home_city)) {
 
       home_start <- tibble::tibble(
@@ -1481,12 +1475,10 @@ daily_routes <- lapply(
         stop_in_source_row = NA_integer_,
         event_date = event_date_value,
         zipcode = "",
-        location_name = home_city,
         latitude = home_lat,
         longitude = home_lng,
         County = "Wadena",
         destination = home_city,
-        original_destination = paste0("Start from ", home_city),
         notes = "Automatically generated start-of-day point.",
         status = "Generated route point",
         is_future_event = day_is_future,
@@ -1510,7 +1502,7 @@ daily_routes <- lapply(
     # If the last actual event is already in Wadena, do not add a duplicate
     # return-home point.
 
-    if (stringr::str_to_lower(dplyr::last(day_events$location_name)) !=
+    if (stringr::str_to_lower(dplyr::last(day_events$destination)) !=
         stringr::str_to_lower(home_city)) {
 
       home_end <- tibble::tibble(
@@ -1519,12 +1511,10 @@ daily_routes <- lapply(
         stop_in_source_row = NA_integer_,
         event_date = event_date_value,
         zipcode = "",
-        location_name = home_city,
         latitude = home_lat,
         longitude = home_lng,
         County = "Wadena",
         destination = home_city,
-        original_destination = paste0("Return to ", home_city),
         notes = "Automatically generated end-of-day return point.",
         status = "Generated route point",
         is_future_event = day_is_future,
@@ -1565,11 +1555,7 @@ route <- dplyr::bind_rows(daily_routes) |>
   dplyr::mutate(
     step = dplyr::row_number(),
 
-    display_name = dplyr::if_else(
-      !is.na(destination) & destination != "",
-      destination,
-      location_name
-    ),
+    display_name = destination,
 
     route_action = dplyr::case_when(
       route_type == "home_departure" ~ paste0("Start from ", home_city),
@@ -1598,17 +1584,7 @@ route <- dplyr::bind_rows(daily_routes) |>
       "<br><em>",
       htmltools::htmlEscape(route_action),
       "</em><br>",
-      htmltools::htmlEscape(date_label),
-      dplyr::if_else(
-        route_type == "event" &
-          original_destination != display_name,
-        paste0(
-          "<br><small>Original entry: ",
-          htmltools::htmlEscape(original_destination),
-          "</small>"
-        ),
-        ""
-      )
+      htmltools::htmlEscape(date_label)
     )
   )
 
@@ -1779,7 +1755,6 @@ route_js <- route |>
     event_date = as.character(event_date),
     date_label = as.character(date_label),
     destination = as.character(display_name),
-    original_destination = as.character(original_destination),
     county = as.character(County),
     zipcode = as.character(zipcode),
     route_type = as.character(route_type),
