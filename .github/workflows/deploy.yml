@@ -1,3 +1,4 @@
+
 name: Deploy Project Awesome
 
 on:
@@ -7,6 +8,8 @@ on:
       - main
     paths:
       - "project_awesome_v16_with_story_timeline.Rmd"
+      - "Erik_and_Haller.png"
+      - "Town_Hauler.png"
       - ".github/workflows/deploy.yml"
   schedule:
     # 09:00 UTC = 3 AM CST / 4 AM CDT
@@ -24,6 +27,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -52,38 +56,95 @@ jobs:
 
       - name: Install R packages
         run: |
-          Rscript -e 'install.packages(c("rmarkdown", "knitr", "leaflet", "htmlwidgets", "dplyr", "tidyr", "purrr", "readr", "stringr", "lubridate", "jsonlite", "sf", "geosphere", "maps"))'
+          Rscript -e 'install.packages(c(
+            "rmarkdown",
+            "knitr",
+            "leaflet",
+            "htmlwidgets",
+            "htmltools",
+            "dplyr",
+            "tidyr",
+            "purrr",
+            "readr",
+            "stringr",
+            "lubridate",
+            "jsonlite",
+            "sf",
+            "geosphere",
+            "maps"
+          ))'
 
       - name: Validate Project Awesome data
         run: |
           Rscript -e '
-            df <- read.csv("minnesota_destinations_coordinates.csv", check.names = FALSE)
-            required <- c(
-              "sequence", "source_row", "stop_in_source_row", "date",
-              "destination", "latitude", "longitude", "County", "miles_counted"
+            df <- read.csv(
+              "minnesota_destinations_coordinates.csv",
+              check.names = FALSE
             )
+
+            required <- c(
+              "sequence",
+              "source_row",
+              "stop_in_source_row",
+              "date",
+              "destination",
+              "latitude",
+              "longitude",
+              "County",
+              "miles_counted"
+            )
+
             missing <- setdiff(required, names(df))
+
             if (length(missing) > 0) {
-              stop(paste("Google Sheet is missing required columns:", paste(missing, collapse = ", ")))
+              stop(paste(
+                "Google Sheet is missing required columns:",
+                paste(missing, collapse = ", ")
+              ))
             }
-            if (nrow(df) == 0) stop("Google Sheet contains no data rows.")
-            cat("Google Sheet validation successful:", nrow(df), "rows loaded.\n")
+
+            if (nrow(df) == 0) {
+              stop("Google Sheet contains no data rows.")
+            }
+
+            cat(
+              "Google Sheet validation successful:",
+              nrow(df),
+              "rows loaded.\n"
+            )
           '
+
+      - name: Verify campaign images
+        run: |
+          test -s Erik_and_Haller.png
+          test -s Town_Hauler.png
+
+          echo "Campaign images found:"
+          ls -lh Erik_and_Haller.png Town_Hauler.png
 
       - name: Render Project Awesome
         run: |
           mkdir -p _site
+
           Rscript -e 'rmarkdown::render(
             "project_awesome_v16_with_story_timeline.Rmd",
             output_file = "index.html",
             output_dir = "_site"
           )'
 
+      - name: Copy campaign images to website
+        run: |
+          cp Erik_and_Haller.png _site/
+          cp Town_Hauler.png _site/
+
       - name: Verify rendered site
         run: |
-          test -f _site/index.html
+          test -s _site/index.html
+          test -s _site/Erik_and_Haller.png
+          test -s _site/Town_Hauler.png
+
           echo "Project Awesome rendered successfully:"
-          ls -lh _site/index.html
+          ls -lh _site/
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -97,8 +158,10 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     runs-on: ubuntu-latest
     needs: build
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
