@@ -1,96 +1,8 @@
-name: Deploy Project Awesome
-
-on:
-  workflow_dispatch:
-
-  push:
-    branches:
-      - main
-    paths:
-      - "project_awesome_v16_with_story_timeline.Rmd"
-      - ".github/workflows/deploy.yml"
-
-  schedule:
-    # Daily at 3:00 AM Minnesota time
-    - cron: "0 3 * * *"
-      timezone: "America/Chicago"
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Download latest mileage data from Google Sheets
-        run: |
-          curl --fail --location --retry 3 \
-            "https://docs.google.com/spreadsheets/d/1-cqfJS4nB5NwgvJzIcrMSTjnWNNdbY3KP3FzcrWsU80/export?format=csv&sheet=minnesota_destinations_coordinates" \
-            --output minnesota_destinations_coordinates.csv
-
-      - name: Verify downloaded CSV
-        run: |
-          test -s minnesota_destinations_coordinates.csv
-          echo "Downloaded Google Sheet:"
-          ls -lh minnesota_destinations_coordinates.csv
-          echo "CSV header:"
-          head -n 1 minnesota_destinations_coordinates.csv
-
-      - name: Set up R
-        uses: r-lib/actions/setup-r@v2
-        with:
-          use-public-rspm: true
-
-      - name: Set up Pandoc
-        uses: r-lib/actions/setup-pandoc@v2
-
-      - name: Install R packages
-        run: |
-          Rscript -e 'install.packages(c("rmarkdown", "knitr", "leaflet", "htmlwidgets", "dplyr", "tidyr", "purrr", "readr", "stringr", "lubridate", "jsonlite", "sf", "geosphere", "maps"))'
-
-      - name: Validate Project Awesome data
-        run: |
-          Rscript -e '
-            df <- read.csv(
-              "minnesota_destinations_coordinates.csv",
-              check.names = FALSE
-            )
-
-            required <- c(
-              "sequence",
-              "source_row",
-              "stop_in_source_row",
-              "date",
-              "destination",
-              "latitude",
-              "longitude",
-              "County",
-              "miles_counted"
-            )
-
             missing <- setdiff(required, names(df))
-
             if (length(missing) > 0) {
-              stop(paste(
-                "Google Sheet is missing required columns:",
-                paste(missing, collapse = ", ")
-              ))
+              stop(paste("Google Sheet is missing required columns:", paste(missing, collapse = ", ")))
             }
-
-            if (nrow(df) == 0) {
-              stop("Google Sheet contains no data rows.")
-            }
-
+            if (nrow(df) == 0) stop("Google Sheet contains no data rows.")
             cat("Google Sheet validation successful:", nrow(df), "rows loaded.\n")
           '
 
@@ -121,8 +33,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     runs-on: ubuntu-latest
     needs: build
-
     steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
