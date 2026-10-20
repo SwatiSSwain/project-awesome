@@ -12,9 +12,9 @@ on:
 
   schedule:
     # Daily at 3:00 AM Minnesota time
-    - cron: "0 3 * * *"     
+    - cron: "0 3 * * *"
       timezone: "America/Chicago"
-      
+
 permissions:
   contents: read
   pages: write
@@ -32,25 +32,17 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      # ------------------------------------------------------------
-      # Get the latest Project Awesome data from Google Sheets
-      # ------------------------------------------------------------
       - name: Download latest mileage data from Google Sheets
         run: |
-          curl --fail --location \
+          curl --fail --location --retry 3 \
             "https://docs.google.com/spreadsheets/d/1-cqfJS4nB5NwgvJzIcrMSTjnWNNdbY3KP3FzcrWsU80/export?format=csv&sheet=minnesota_destinations_coordinates" \
             --output minnesota_destinations_coordinates.csv
 
-      # ------------------------------------------------------------
-      # Make sure Google actually returned a usable CSV
-      # ------------------------------------------------------------
       - name: Verify downloaded CSV
         run: |
           test -s minnesota_destinations_coordinates.csv
-
           echo "Downloaded Google Sheet:"
           ls -lh minnesota_destinations_coordinates.csv
-
           echo "CSV header:"
           head -n 1 minnesota_destinations_coordinates.csv
 
@@ -66,9 +58,6 @@ jobs:
         run: |
           Rscript -e 'install.packages(c("rmarkdown", "knitr", "leaflet", "htmlwidgets", "dplyr", "tidyr", "purrr", "readr", "stringr", "lubridate", "jsonlite", "sf", "geosphere", "maps"))'
 
-      # ------------------------------------------------------------
-      # Validate the columns required by Project Awesome
-      # ------------------------------------------------------------
       - name: Validate Project Awesome data
         run: |
           Rscript -e '
@@ -83,39 +72,28 @@ jobs:
               "stop_in_source_row",
               "date",
               "destination",
-              "location_name",
               "latitude",
               "longitude",
               "County",
-              "original_destination",
               "miles_counted"
             )
 
             missing <- setdiff(required, names(df))
 
             if (length(missing) > 0) {
-              stop(
-                paste(
-                  "Google Sheet is missing required columns:",
-                  paste(missing, collapse = ", ")
-                )
-              )
+              stop(paste(
+                "Google Sheet is missing required columns:",
+                paste(missing, collapse = ", ")
+              ))
             }
 
             if (nrow(df) == 0) {
               stop("Google Sheet contains no data rows.")
             }
 
-            cat(
-              "Google Sheet validation successful:",
-              nrow(df),
-              "rows loaded.\n"
-            )
+            cat("Google Sheet validation successful:", nrow(df), "rows loaded.\n")
           '
 
-      # ------------------------------------------------------------
-      # Render the site using the freshly downloaded Google Sheet
-      # ------------------------------------------------------------
       - name: Render Project Awesome
         run: |
           mkdir -p _site
@@ -148,6 +126,3 @@ jobs:
     needs: build
 
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
