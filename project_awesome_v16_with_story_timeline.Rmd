@@ -2229,8 +2229,8 @@ select[id*="speed"] {
 
   .story-journey-caption .story-journey-small {
     margin-top: 3px !important;
-    font-size: 8px !important;
-    line-height: 1.1 !important;
+    font-size: 11px !important;
+    line-height: 1.2 !important;
   }
 
   /* Raise the final caption for short phone screens. */
@@ -5595,11 +5595,13 @@ map
 }
 @media (max-width: 640px) {
   .story-intro .story-intro-mile-line {
-    font-size: 14px !important;
-    max-width: 300px !important;
+    font-size: 17px !important;
+    max-width: 340px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    line-height: 1.35 !important;
+    line-height: 1.25 !important;
+    letter-spacing: 0.01em !important;
+    font-weight: 800 !important;
     text-wrap: balance;
   }
 }
@@ -5653,5 +5655,27 @@ map
   .story-ending-line3 { font-size: 35px !important; }
   .story-ending-logo { width: 210px !important; }
   .story-ending-actions a { min-height: 49px !important; font-size: 17px !important; }
+}
+</style>
+
+<style>
+/* Mobile playback controls: separate Restart from the music toggle. */
+@media (max-width: 640px) {
+  .route-animation-control .button-row:not(.timeline-button-row) button[id^="restart-"] {
+    transform: translateX(-4px) !important;
+  }
+}
+</style>
+
+<style>
+/* Desktop/laptop journey captions: larger, easier-to-read text. Mobile unchanged. */
+@media (min-width: 641px) {
+  .story-journey-caption {
+    font-size: 18px !important;
+  }
+  .story-journey-caption .story-journey-small {
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+  }
 }
 </style>
