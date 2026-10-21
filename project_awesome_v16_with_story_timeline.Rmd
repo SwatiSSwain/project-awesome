@@ -5784,3 +5784,21 @@ map
   }
 }
 </style>
+
+<style>
+/* Increase the County by County campaign line on desktop and mobile only. */
+@media (min-width: 641px) {
+  .story-intro .story-intro-mile-line {
+    font-size: 19px !important;
+    line-height: 1.18 !important;
+    letter-spacing: 0 !important;
+  }
+}
+@media (max-width: 640px) {
+  .story-intro .story-intro-mile-line {
+    font-size: 16px !important;
+    line-height: 1.22 !important;
+    letter-spacing: 0 !important;
+  }
+}
+</style>
