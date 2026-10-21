@@ -4870,7 +4870,8 @@ function(el, x, data) {
   }
 
   function finishPlayback() {
-    if (projectMusic) projectMusic.pause();
+    // Let the selected soundtrack continue until the audio ends naturally.
+    // Only stop the route animation when the final story card appears.
     stopPlayback();
     renderAtPosition(maxPosition);
     showStoryEnding();
