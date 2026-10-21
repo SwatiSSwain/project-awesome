@@ -2631,8 +2631,8 @@ function(el, x, data) {
   var baseDuration = Math.max(100, Number(data.segmentDuration) || 650);
 
   // Playback speed controls the journey/story clock after the intro.
-  // Default playback is 10x; 15x is also available in the speed selector.
-  var speedMultiplier = 10;
+  // Default playback is 7x; 10x and 15x remain available in the speed selector.
+  var speedMultiplier = 7;
 
   function scaledDelay(milliseconds) {
     return Math.max(1, Number(milliseconds || 0) / speedMultiplier);
@@ -3642,8 +3642,8 @@ function(el, x, data) {
           '<option value=\"3\">3x</option>' +
           '<option value=\"4\">4x</option>' +
           '<option value=\"5\">5x</option>' +
-          '<option value=\"7\">7x</option>' +
-          '<option value=\"10\" selected>10x</option>' +
+          '<option value=\"7\" selected>7x</option>' +
+          '<option value=\"10\">10x</option>' +
           '<option value=\"15\">15x</option>' +
         '</select>' +
       '</div>' +
@@ -5676,6 +5676,111 @@ map
   .story-journey-caption .story-journey-small {
     font-size: 12px !important;
     line-height: 1.2 !important;
+  }
+}
+</style>
+
+
+<style>
+/* Photo-aware intro layout: preserve the central face area. */
+.story-intro .story-intro-inner {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: 100% !important;
+  margin: 0 !important;
+  transform: none !important;
+}
+.story-intro .story-intro-name-first,
+.story-intro .story-intro-title,
+.story-intro .story-intro-rule,
+.story-intro .story-intro-subtitle,
+.story-intro .story-intro-mile-line,
+.story-intro .story-music-options {
+  position: absolute !important;
+  left: 5% !important;
+  width: 90% !important;
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  transform: none !important;
+}
+.story-intro .story-intro-name-first {
+  top: 10% !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+.story-intro .story-intro-title {
+  top: 32% !important;
+  font-size: clamp(22px, 5.4vw, 34px) !important;
+}
+.story-intro .story-intro-rule {
+  top: 45% !important;
+  left: 43.5% !important;
+  width: 13% !important;
+  margin: 0 !important;
+}
+.story-intro .story-intro-subtitle { top: 49% !important; margin-top: 0 !important; }
+.story-intro .story-intro-mile-line { top: 57% !important; margin-top: 0 !important; }
+.story-intro .story-music-options {
+  top: 66% !important;
+  margin-top: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+@media (max-width: 640px) {
+  .story-intro .story-intro-name-first { top: 10% !important; font-size: 25px !important; }
+  .story-intro .story-intro-title { top: 33% !important; font-size: 22px !important; }
+  .story-intro .story-intro-rule { top: 46% !important; }
+  .story-intro .story-intro-subtitle { top: 50% !important; font-size: 19px !important; }
+  .story-intro .story-intro-mile-line { top: 58% !important; font-size: 13px !important; }
+  .story-intro .story-music-options { top: 68% !important; }
+}
+</style>
+
+<style>
+/* Desktop only: lift the entire intro text/button group 28px; mobile stays unchanged. */
+@media (min-width: 641px) {
+  .story-intro .story-intro-inner {
+    transform: translateY(-28px) !important;
+  }
+}
+</style>
+
+<style>
+/* Desktop-only refinement: raise Erik's name independently and keep equation on one line. */
+@media (min-width: 641px) {
+  .story-intro .story-intro-name-first {
+    top: 6% !important;
+  }
+  .story-intro .story-intro-title {
+    font-size: 21px !important;
+    line-height: 1.15 !important;
+    white-space: nowrap !important;
+    letter-spacing: -0.035em !important;
+  }
+  .story-intro .intro-equation-break { display: none !important; }
+}
+</style>
+
+<style>
+/* Desktop-only final intro refinement; mobile rules remain untouched. */
+@media (min-width: 641px) {
+  .story-intro .story-intro-name-first {
+    top: 8% !important;
+  }
+  .story-intro .story-intro-title {
+    font-size: 29px !important;
+    line-height: 1.15 !important;
+    white-space: normal !important;
+    letter-spacing: -0.02em !important;
+  }
+  .story-intro .intro-equation-break {
+    display: inline !important;
+  }
+  .story-intro .intro-equation-tail {
+    white-space: nowrap !important;
   }
 }
 </style>
