@@ -5789,7 +5789,7 @@ map
 /* Increase the County by County campaign line on desktop and mobile only. */
 @media (min-width: 641px) {
   .story-intro .story-intro-mile-line {
-    font-size: 19px !important;
+    font-size: 20px !important;
     line-height: 1.18 !important;
     letter-spacing: 0 !important;
   }
@@ -5799,6 +5799,19 @@ map
     font-size: 16px !important;
     line-height: 1.22 !important;
     letter-spacing: 0 !important;
+  }
+}
+</style>
+
+<style>
+/* Mobile-only: emphasize the County by County campaign caption. */
+@media (max-width: 640px) {
+  .story-intro .story-intro-mile-line {
+    font-size: 20px !important;
+    line-height: 1.12 !important;
+    letter-spacing: 0 !important;
+    padding: 0 8px !important;
+    overflow-wrap: normal !important;
   }
 }
 </style>
