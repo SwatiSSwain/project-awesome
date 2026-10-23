@@ -80,6 +80,36 @@ await page.addStyleTag({ content: `
   }
 ` });
 
+await page.addStyleTag({ content: `
+  /* Hide interactive controls in YouTube recording only */
+  #story-music-options,
+  .story-music-options,
+  #story-play-music,
+  #story-play-silent,
+  .story-ending-actions,
+  .story-ending-replay,
+  #story-replay-music,
+  #story-replay-silent,
+  .story-controls,
+  #story-controls {
+    visibility: hidden !important;
+  }
+` });
+console.log('Visible controls:', await page.evaluate(() =>
+  [...document.querySelectorAll('button, input, select')]
+    .filter(el => {
+      const r = el.getBoundingClientRect();
+      const s = getComputedStyle(el);
+      return r.width > 0 && r.height > 0 &&
+        s.visibility !== 'hidden' && s.display !== 'none';
+    })
+    .map(el => ({
+      tag: el.tagName,
+      id: el.id,
+      className: String(el.className),
+      text: el.textContent.trim().slice(0, 50)
+    }))
+));
 
   recorder = spawn('ffmpeg', [
     '-hide_banner', '-loglevel', 'warning', '-y',
