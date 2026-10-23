@@ -1,9 +1,5 @@
-name: Export YouTube Video
 
-on:
-  workflow_dispatch:
-    inputs:
-      animation_url:name: Export YouTube Video
+name: Export YouTube Video
 
 on:
   workflow_dispatch:
@@ -25,19 +21,23 @@ jobs:
     name: Record 1080p MP4
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+
       - name: Install recording tools
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq ffmpeg xvfb
           npm install --no-save playwright@1.58.2
           npx playwright install --with-deps chromium
+
       - name: Record animation
         env:
           ANIMATION_URL: ${{ inputs.animation_url }}
@@ -46,6 +46,7 @@ jobs:
           mkdir -p export
           xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24 -ac' \
             node scripts/export-youtube-video.mjs
+
       - name: Add licensed soundtrack and encode MP4
         run: |
           curl --fail --location --retry 3 \
@@ -56,61 +57,7 @@ jobs:
             -map 0:v:0 -map '[a]' -c:v copy -c:a aac -b:a 192k \
             -shortest -movflags +faststart export/project-awesome-youtube-1080p.mp4
           ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 export/project-awesome-youtube-1080p.mp4
-      - name: Upload YouTube video
-        uses: actions/upload-artifact@v4
-        with:
-          name: project-awesome-youtube-1080p
-          path: export/project-awesome-youtube-1080p.mp4
-          retention-days: 14
-          if-no-files-found: error
 
-        description: 'Published animation URL'
-        required: true
-        default: 'https://swatisswain.github.io/project-awesome/'
-      playback_speed:
-        description: 'Animation speed (7 = 7x)'
-        required: true
-        default: '7'
-
-permissions:
-  contents: read
-
-jobs:
-  export:
-    name: Record 1080p MP4
-    runs-on: ubuntu-24.04
-    timeout-minutes: 35
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Set up Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-      - name: Install recording tools
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg xvfb
-          npm install --no-save playwright@1.58.2
-          npx playwright install --with-deps chromium
-      - name: Record animation
-        env:
-          ANIMATION_URL: ${{ inputs.animation_url }}
-          PLAYBACK_SPEED: ${{ inputs.playback_speed }}
-        run: |
-          mkdir -p export
-          xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24 -ac' \
-            node scripts/export-youtube-video.mjs
-      - name: Add licensed soundtrack and encode MP4
-        run: |
-          curl --fail --location --retry 3 \
-            'https://www.erikosberg4congress.com/wp-content/uploads/2026/06/JerryReed-EastBoundandDown.m4a' \
-            -o export/soundtrack.m4a
-          ffmpeg -hide_banner -y -i export/recording.mp4 -i export/soundtrack.m4a \
-            -filter_complex '[1:a]apad[a]' \
-            -map 0:v:0 -map '[a]' -c:v copy -c:a aac -b:a 192k \
-            -shortest -movflags +faststart export/project-awesome-youtube-1080p.mp4
-          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 export/project-awesome-youtube-1080p.mp4
       - name: Upload YouTube video
         uses: actions/upload-artifact@v4
         with:
