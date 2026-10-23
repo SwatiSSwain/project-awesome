@@ -59,12 +59,27 @@ async function diagnostics(reason) {
 try {
   await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 });
   await page.locator('#story-play-silent').waitFor({ state: 'attached', timeout: 120000 });
-  await page.addStyleTag({ content: `
-    html,body { background:#fff !important; overflow:hidden !important; }
-    .main-container { zoom: 1.45 !important; }
-    #story-music-options, .story-music-options { visibility:hidden !important; }
-    .story-ending-actions, .story-ending-replay { visibility:hidden !important; }
-  ` });
+  
+await page.addStyleTag({ content: `
+  html, body {
+    background: #fff !important;
+    overflow: hidden !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  body {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .main-container {
+    zoom: 1.63 !important;
+    flex: 0 0 auto !important;
+  }
+` });
+
 
   recorder = spawn('ffmpeg', [
     '-hide_banner', '-loglevel', 'warning', '-y',
