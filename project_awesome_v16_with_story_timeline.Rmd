@@ -1800,6 +1800,10 @@ route_js <- route |>
     <a class="story-ending-donate" href="https://secure.actblue.com/donate/erik-osberg?refcode=homepage&amp;amount=100&amp;express_lane=true" target="_blank" rel="noopener noreferrer">Chip in for Gas</a>
     <a class="story-ending-involved" href="https://www.erikosberg4congress.com/get-involved/" target="_blank" rel="noopener noreferrer">Get Involved</a>
   </div>
+  <div class="story-ending-replay" aria-label="Replay the journey">
+    <button type="button" id="story-replay-music"><span class="replay-first-line">▶ Play Again</span> <span class="replay-second-line">with Music</span></button>
+    <button type="button" id="story-replay-silent"><span class="replay-first-line">Play Again</span> <span class="replay-second-line">without Music</span></button>
+  </div>
 </div>
 
 <div class="earth-comparison-panel" aria-label="Animated mileage comparison with Earth's equator">
@@ -5080,6 +5084,16 @@ function(el, x, data) {
     if (musicEnabled) stopMusic();
     else startMusic(false);
   });
+  // Replay directly from the ending using the existing, tested intro choices.
+  function replayJourney(withMusic) {
+    restart(false);
+    var choice = document.getElementById(withMusic ? 'story-play-with-music' : 'story-play-silent');
+    if (choice) choice.click();
+  }
+  var replayMusicButton = document.getElementById('story-replay-music');
+  var replaySilentButton = document.getElementById('story-replay-silent');
+  if (replayMusicButton) replayMusicButton.addEventListener('click', function() { replayJourney(true); });
+  if (replaySilentButton) replaySilentButton.addEventListener('click', function() { replayJourney(false); });
   var withMusicButton = document.getElementById('story-play-with-music');
   var silentButton = document.getElementById('story-play-silent');
   function dismissIntroChoice(withMusic) {
@@ -5822,5 +5836,45 @@ map
 .story-ending .story-ending-line1 { font-size: 26px !important; line-height: 1.12 !important; }
 @media (max-width: 640px) {
   .story-ending .story-ending-line1 { font-size: 22px !important; line-height: 1.12 !important; }
+}
+
+/* Two compact, side-by-side replay choices beneath the campaign actions. */
+.story-ending.is-visible { pointer-events: auto !important; }
+.story-ending-replay {
+  display: flex !important;
+  flex-direction: row !important;
+  width: 100% !important;
+  gap: 10px !important;
+  margin-top: 13px !important;
+  position: relative !important;
+  z-index: 2 !important;
+  pointer-events: auto !important;
+}
+.story-ending-replay button {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  min-height: 53px !important;
+  padding: 8px 6px !important;
+  border: 2px solid #4E2D7E !important;
+  border-radius: 8px !important;
+  background: #4E2D7E !important;
+  color: #FFFFFF !important;
+  font-family: "League Spartan", Arial, sans-serif !important;
+  font-size: 19px !important;
+  font-weight: 800 !important;
+  line-height: 1.15 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+.story-ending-replay button + button {
+  background: rgba(255,255,255,.96) !important;
+  color: #4E2D7E !important;
+}
+.story-ending-replay button:focus-visible { outline: 3px solid #8c66bd !important; outline-offset: 2px !important; }
+@media (max-width: 640px) {
+  .story-ending-replay { gap: 7px !important; margin-top: 10px !important; }
+  .story-ending-replay button { font-size: 17px !important; min-height: 49px !important; padding: 7px 4px !important; }
+  .story-ending-replay button .replay-first-line,
+  .story-ending-replay button .replay-second-line { display: block !important; white-space: nowrap !important; }
 }
 </style>
