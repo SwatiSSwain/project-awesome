@@ -2307,7 +2307,7 @@ select[id*="speed"] {
 
 <style>
 /* Scale the existing 600 x 650 composition to the iframe width.
-   1000px desktop; 800px laptop; 700px intermediate; mobile unchanged.
+   800px desktop; 700px intermediate; mobile unchanged.
    Width-based breakpoints are based on the iframe viewport, not monitor height. */
 @media (min-width: 641px) {
   .main-container {
@@ -2321,9 +2321,6 @@ select[id*="speed"] {
 }
 @media (min-width: 800px) {
   .main-container { zoom: 1.3333333333; } /* 800 x 867 */
-}
-@media (min-width: 1000px) {
-  .main-container { zoom: 1.6666666667; } /* 1000 x 1083 */
 }
 </style>
 
