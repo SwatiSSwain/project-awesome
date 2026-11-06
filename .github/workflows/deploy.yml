@@ -1,6 +1,7 @@
 
 name: Deploy Project Awesome
 
+
 on:
   workflow_dispatch:
   push:
@@ -11,9 +12,6 @@ on:
       - "Erik_and_Haller.png"
       - "Town_Hauler.png"
       - ".github/workflows/deploy.yml"
-  schedule:
-    # 09:00 UTC = 3 AM CST / 4 AM CDT
-    - cron: "17 8 * * *"
 
 permissions:
   contents: read
